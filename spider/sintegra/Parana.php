@@ -10,11 +10,6 @@ class Parana {
 
     private const PATH_CAPTCHA = "spider/sintegra/captcha/captcha.jpeg";
 
-    public function __construct()
-    {
-
-    }
-
     private function validar_cnpj($cnpj)
     {
         return preg_match("/^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}\-?\d{2}$/", $cnpj);
@@ -51,7 +46,6 @@ class Parana {
 
     private function request_consultar_empresa($cnpj, $captcha, $cookie)
     {
-
         $form = [
             "_method" => "POST",
             "data[Sintegra1][CodImage]" => $captcha,
@@ -86,12 +80,40 @@ class Parana {
 
         $response = curl_exec($curl);
 
-        preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response,  $match_found);
+        if ($this->validar_request($response, $captcha, $cnpj)) {
+            preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response,  $match_found);
 
-        #TODO: tratar valor não encotrado.
-        parse_str($match_found[1][1], $cookie);
+            #TODO: tratar valor não encotrado.
+            parse_str($match_found[1][1], $cookie);
 
-        return $this->obter_valores_response($response, $cookie);
+            return $this->obter_valores_response($response, $cookie);
+        }
+
+        return null;
+
+    }
+
+    private function validar_request($response, $captcha, $cnpj)
+    {
+        $cnpj = (int)str_replace([".", "/", "-"], "", $cnpj);
+
+        preg_match_all('/^Location:\s(.*)/mi', $response,  $match_found);
+
+        if (sizeof($match_found[1])) {
+            $url_erro = (string)$match_found[1][0];
+
+            if (strpos($url_erro, $captcha)) {
+                echo "Captcha digitado é inválido.";
+                return false;
+            }
+
+            if (strpos($url_erro, $cnpj)) {
+                echo "CNPJ informado é inválido.";
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function obter_valores_response($response, $cookie)
@@ -185,7 +207,6 @@ class Parana {
 
     private function obter_valores_endereco($dom)
     {
-
         $index = [
             'logradouro' => 'Logradouro:',
             'numero' => 'Número:',
@@ -225,7 +246,6 @@ class Parana {
 
     private function ajustar_array_retorno($index, $content)
     {
-
         $content = (array)$content;
 
         $retorno = [];
@@ -246,7 +266,7 @@ class Parana {
             if ($ehCampo) {
                 $retorno[$tag] = '';
             } else {
-                $retorno[$tag] = $valor;
+                $retorno[$tag] = trim($valor);
             }
 
         }
@@ -301,7 +321,6 @@ class Parana {
 
         preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response,  $match_found);
 
-        #TODO: tratar valor não encotrado.
         parse_str($match_found[1][0], $cookie);
 
         return $cookie;
@@ -319,13 +338,9 @@ class Parana {
 
         $captcha = readline("Digite o captcha da imagem aberta: ");
 
-        #TODO: validar captcha
 
         $retorno = $this->request_consultar_empresa($cnpj, $captcha, $cookie);
 
-        var_dump($retorno);
-
-
+        return $retorno;
     }
-
 }
