@@ -303,6 +303,12 @@ class Parana {
         //criando o retorno com os valores na posição correta
         $retorno = $this->ajustar_array_retorno($index, $content);
 
+        $atividade_principal = explode("-", $retorno['atividade_principal']);
+        $situacao_atual = explode("-", $retorno['situacao_atual']);
+
+        $retorno['atividade_principal'] = ['codigo' => $atividade_principal[0], 'descricao' => trim($atividade_principal[1])];
+        $retorno['situacao_atual'] = trim($situacao_atual[0]);
+
         $retorno['hora'] = date("H:i:s");
         $retorno['data'] = date("d/m/Y");
 
