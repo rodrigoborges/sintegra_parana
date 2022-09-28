@@ -8,6 +8,8 @@ echo "iniciando teste\n";
 
 $spider = new Parana();
 
-$spider->pesquisar_cnpj("00.063.744/0001-55");
+$retorno = $spider->pesquisar_cnpj("00080160000198");
+
+var_dump($retorno);
 
 echo "finalizando teste \n";

@@ -144,7 +144,7 @@ class Parana {
             $token_sintegra = $sintegra_campo_anterior->item(0)->nodeValue;
         }
 
-        if (!$token_sintegra) return [];
+        if (!$token_sintegra) return;
 
         $form = [
             "_method" => "POST",
